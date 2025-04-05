@@ -5,39 +5,35 @@ const Tour = require('./../models/toursModel');
 exports.getReq = async (req, res) => {
   try {
     // BUILDING QUERY
+    const queryObj = { ...req.query };
+    // console.log(queryObj);
+    const { sort, fields, limit, page, ...remainingfields } = queryObj;
+    // console.log(remainingfields);
 
-    // 1A) FILTERING  [DURATION=5]
-    let queryObj = { ...req.query };
-    const excludeQueries = ['sort', 'page', 'limit', 'fields'];
-    excludeQueries.forEach((el) => delete queryObj[el]);
+    // another way of filtering is using mongoose methods where equals
+    // const query = Tour.find()
+    //   .where('difficulty')
+    //   .equals('easy')
+    //   .where('duration')
+    //   .equals(5);
 
-    // 1B) ADVANCED FILTERING [PRICE[LT]=999]
-    // LT/GT/LTE/GTE
-    // { duration: { $lt: '5' } };
+    // another old jonas way is
+    // const extraFields = ['page', 'sort', 'limit', 'fields'];
+    // extraFields.forEach((field) => delete queryObj[field]);
+    // const query = Tour.find(queryObj);
 
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(lt|gt|lte|gte)\b/g, (match) => `$${match}`);
+    // const tours = await Tour.find();
 
-    let query = Tour.find(JSON.parse(queryStr));
+    // res.status(200).send({
+    //   status: 'success',
+    //   requestedAt: req.requestTime,
+    //   results: tours.length,
+    //   data: {
+    //     tours,
+    //   },
+    // });
 
-    // 2) SORTING
-    // sort=price(Asending) /srt=-price(desending)
-    // sort=price,ratingsAverage => querystr {sort :'price duration'}
-    if (req.query.sort) {
-      let sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdAt');
-    }
-
-    // 3) FIELDS
-
-    if (req.query.fields) {
-      let fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-    } else {
-      query = query.select('-__v');
-    }
+    const query = Tour.find(remainingfields);
 
     // EXECUTING QUERY
     const tours = await query;
