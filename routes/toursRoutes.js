@@ -10,6 +10,10 @@ const tour = express.Router();
 // now place this callback middleware func in controllers files nd export it
 
 tour
+  .route('/top-5-cheap-tours')
+  .get(toursControllers.getCheapToursMiddleware, toursControllers.getReq);
+
+tour
   .route('/')
   .get(toursControllers.getReq)
   // .post(toursControllers.checkBody, toursControllers.postReq); //chaining multiple middlware func , no need of checkbody middlwre our mongoose model will takecare

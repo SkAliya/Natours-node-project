@@ -1,5 +1,14 @@
 const Tour = require('./../models/toursModel');
 
+// MIDDLEWARE
+
+exports.getCheapToursMiddleware = (req, res, next) => {
+  req.query.sort = '-ratingsAverage,price';
+  req.query.limit = '5';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 // TOURS HANDLERS
 
 exports.getReq = async (req, res) => {
@@ -22,7 +31,7 @@ exports.getReq = async (req, res) => {
 
     // 2) SORTING
     // sort=price(Asending) /srt=-price(desending)
-    // sort=price,ratingsAverage => querystr {sort :'price duration'}
+    // sort=price,ratingsAverage => querystr {sort :'-price duration'}  compass =>{ratingsAverage:-1,price:1}
     if (req.query.sort) {
       let sortBy = req.query.sort.split(',').join(' ');
       query = query.sort(sortBy);
@@ -36,9 +45,23 @@ exports.getReq = async (req, res) => {
       let fields = req.query.fields.split(',').join(' ');
       query = query.select(fields);
     } else {
-      query = query.select('-__v');
+      query = query.select('-__v').select('-name');
     }
 
+    // PAGINATION
+    // page=2&limit=5
+    // page 1 1-5 ,page 2 6-10 , page 3 11-15 ..
+
+    const page = Number(req.query.page) || 1;
+    const limit = req.query.limit * 1 || 10; //converting to number by multi 1
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numOfTours = await Tour.countDocuments();
+      if (skip >= numOfTours) throw new Error('This page does not exits!');
+    }
     // EXECUTING QUERY
     const tours = await query;
 
