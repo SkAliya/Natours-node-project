@@ -13,6 +13,9 @@ tour
   .route('/top-5-cheap-tours')
   .get(toursControllers.getCheapToursMiddleware, toursControllers.getReq);
 
+tour.route('/tours-stats').get(toursControllers.toursStats);
+tour.route('/monthly-plans/:year').get(toursControllers.monthlyTours);
+
 tour
   .route('/')
   .get(toursControllers.getReq)

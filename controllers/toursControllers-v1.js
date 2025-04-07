@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 let toursData = JSON.parse(
-  fs.readFileSync(`./../dev-data/data/tours-simple.json`)
+  fs.readFileSync(`./../dev-data/data/tours-simple.json`),
 );
 
 // TOURS HANDLERS
@@ -33,7 +33,7 @@ exports.postReq = (req, res) => {
           tours: toursData,
         },
       });
-    }
+    },
   );
 };
 
@@ -60,7 +60,7 @@ exports.patchReq = (req, res) => {
       res.status(200).send({
         status: 'success',
       });
-    }
+    },
   );
 };
 
@@ -85,7 +85,7 @@ exports.deleteReq = (req, res) => {
         message: 'successfully deleted',
         data: null,
       });
-    }
+    },
   );
 };
 
