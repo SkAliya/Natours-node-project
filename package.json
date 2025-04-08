@@ -8,11 +8,13 @@
     "express": "^4.21.2",
     "mongoose": "^5.13.23",
     "morgan": "^1.10.0",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "validator": "^13.15.0"
   },
   "scripts": {
     "start": "nodemon server.js",
-    "start:prod": "set NODE_ENV=production&&nodemon server.js"
+    "start:prod": "set NODE_ENV=production&&nodemon server.js",
+    "debugg": "ndb server.js"
   },
   "author": "Aliya Shaik",
   "license": "ISC",
@@ -26,6 +28,7 @@
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "ndb": "^1.1.5",
     "prettier": "^3.5.3"
   }
 }

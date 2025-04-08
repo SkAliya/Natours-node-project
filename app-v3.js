@@ -2,9 +2,6 @@ const fs = require('fs');
 const express = require('express');
 const morgan = require('morgan');
 
-const AppGlobalErrorClass = require('./utils/appGlobalError');
-const errorController = require('./controllers/errorController');
-
 const toursRouter = require(`${__dirname}/routes/toursRoutes`);
 const usersRouter = require(`${__dirname}/routes/usersRoutes`);
 
@@ -54,40 +51,25 @@ app.use('/api/v1/users', usersRouter);
 // });
 
 // AFTER THE ERROR MIDDLEWARE USED
-// here we dont need to set this data everytym for each error catch so we can use calss for this
-// see the utils the globalErrorClass file
+// no need to send res as above we just defin an err obj nd pass it to next() nd the nxt middlwre will recives that err from nxt nd use it in global handler express error handler middleware
 app.all('*', (req, res, next) => {
-  // const err = new Error(
-  //   `The req url ${req.originalUrl} not found on this server`,
-  // );
-  // err.status = 'fail';
-  // err.statusCode = 404;  this all replace by the Appglobalerrorclass we need to pass the stscode & messg
-  // next(err);
-
-  next(
-    new AppGlobalErrorClass(
-      404,
-      `The req url ${req.originalUrl} not found on this server`,
-    ),
+  const err = new Error(
+    `The req url ${req.originalUrl} not found on this server`,
   );
+  err.status = 'fail';
+  err.statusCode = 404;
+  next(err);
 });
 
-// // GLOBAL ERROR HANDLER MIDDLEWARRE
-// // express error handler middleware
-// app.use((err, req, res, next) => {
-//   console.log(err.stack); //Error: The req url /api/v1/tourssss not found on this server
+// GLOBAL ERROR HANDLER MIDDLEWARRE
+// express error handler middleware
+app.use((err, req, res, next) => {
+  err.status = err.status || 'error';
+  err.statusCode = err.statusCode || '500';
 
-//   err.status = err.status || 'error';
-//   err.statusCode = err.statusCode || '500';
-
-//   res.status(err.statusCode).json({
-//     status: err.status,
-//     message: err.message,
-//   });
-// });
-
-// now the above global err middlware commtd is place in errorController.js file under controllers
-
-app.use(errorController);
-
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+  });
+});
 module.exports = app;

@@ -1,6 +1,7 @@
+// import validator from 'validator';es6
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-
+const validator = require('validator');
 // /////////////////////////////////doc new tour creating using mongoose model & schema
 const tourSchema = new mongoose.Schema(
   {
@@ -9,6 +10,16 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have name'],
       unique: true,
       trim: true,
+      minLength: [
+        6,
+        'A tour name must have greater or eaual than  6 charaters',
+      ],
+      maxLength: [40, 'A tour name must have less or equal than  40 charaters'],
+      // validate: [validator.isAlpha, 'A tour name only contains charaters'], this is not quite usful because it not taking spaces so we use regex instead simply
+      validate: [
+        /^[A-Za-z\s]+$/,
+        'A tour name only contains charaters &  spaces',
+      ],
     },
     slug: String,
     secretTour: {
@@ -26,17 +37,23 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A tour must have a difficulty'],
+      enum: {
+        values: ['easy', 'medium', 'difficulty'],
+        message: 'Difficulty is either: easy, medium or difficulty',
+      },
     },
 
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      min: [1, 'A tour ratings must be above 1.0'],
+      max: [5, 'A tour ratings must be below 5.0'],
     },
     ratingsQuantity: {
       type: Number,
       default: 0,
     },
-    priceDiscount: Number,
+
     summary: {
       type: String,
       required: [true, 'A tour must have summary'],
@@ -56,11 +73,23 @@ const tourSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    rating: Number,
+    rating: {
+      type: Number,
+    },
     price: {
       type: Number,
       default: 200,
       required: [true, 'A tour must have a price'],
+    },
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (val) {
+          // this only points to new currt doc not the updated 1 when update doc there is no pointing to this
+          return this.price > val;
+        },
+        message: `A tour Discount price ({VALUE}) must less than regular price `, //here mongoose gives us the value
+      },
     },
     startDates: [Date],
   },
@@ -76,7 +105,7 @@ tourSchema.virtual('durationWeeks').get(function () {
 });
 
 //DOCUMENT MIDDLEWARES OF IN MONGOOSE
-
+// DOCUMENT MIDDLWARE:runs before .save & .create not for update ok
 // tourSchema.pre('save', function (next) {
 //   this.slug = slugify(this.name, { lower: true });
 //   next();
