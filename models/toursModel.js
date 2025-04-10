@@ -134,7 +134,7 @@ tourSchema.post(/^find/, function (docs, next) {
   console.log(
     `query takes time to create find ${Date.now() - this.start} milliseconds `,
   );
-  console.log(docs);
+  // console.log(docs);
   next();
 });
 
@@ -142,7 +142,7 @@ tourSchema.post(/^find/, function (docs, next) {
 
 tourSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  console.log(this.pipeline());
+  // console.log(this.pipeline());
   next();
 });
 

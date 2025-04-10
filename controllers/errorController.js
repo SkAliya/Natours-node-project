@@ -44,6 +44,12 @@ const handleValidationErrors = (error) => {
   const message = `Invalid input data: ${value.join('. ')}`;
   return new AppGlobalErrorClass(400, message);
 };
+
+const handleInvalidToken = () =>
+  new AppGlobalErrorClass(401, 'Invalid token, Please login again');
+const handleTokenExpired = () =>
+  new AppGlobalErrorClass(401, 'Token expired, Please login again');
+
 module.exports = (err, req, res, next) => {
   console.log(err.stack); //Error: The req url /api/v1/tourssss not found on this server
 
@@ -57,6 +63,8 @@ module.exports = (err, req, res, next) => {
     if (error.code === 11000) error = handleDuplicatePost(error);
 
     if (error.name === 'ValidationError') error = handleValidationErrors(error);
+    if (error.name === 'JsonWebTokenError') error = handleInvalidToken();
+    if (error.name === 'TokenExpiredError') error = handleTokenExpired();
 
     sendErrorProd(res, error);
   }

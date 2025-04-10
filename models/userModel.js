@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema({
     validate: validator.isStrongPassword,
     minLength: [8, 'Password must be above 8 characters '],
     maxLength: [30, 'Password must be below 30 characters'],
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -36,6 +37,7 @@ const userSchema = new mongoose.Schema({
       message: 'Confirm Password must be match with Password',
     },
   },
+  passwordChanged: Date,
 });
 
 // MIDDLEWARE FOR PASSWRD ENCRYPTING
@@ -51,6 +53,29 @@ userSchema.pre('save', async function (next) {
 
   next();
 });
+
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.checkPasswordChanged = function (jwtTimeStampIAT) {
+  console.log(this.passwordChanged);
+  if (this.passwordChanged) {
+    const passwordChangedTimeStamp = parseInt(
+      this.passwordChanged.getTime() / 1000,
+      10,
+    );
+    console.log(
+      passwordChangedTimeStamp,
+      jwtTimeStampIAT,
+      this.passwordChanged,
+    );
+    return jwtTimeStampIAT < passwordChangedTimeStamp;
+  }
+};
 
 const User = mongoose.model('User', userSchema);
 
