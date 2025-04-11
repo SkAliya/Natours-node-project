@@ -32,6 +32,10 @@ tour
   .route('/:id')
   .get(toursControllers.getSingleReq)
   .patch(toursControllers.patchReq)
-  .delete(toursControllers.deleteReq);
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide'),
+    toursControllers.deleteReq,
+  );
 
 module.exports = tour;

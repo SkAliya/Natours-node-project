@@ -2,7 +2,9 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const AppGlobalErrorClass = require('../utils/appGlobalError');
 const catchAsync = require('../utils/catchAsync');
-const User = require('./../models/userModel');
+const User = require('../models/userModel');
+
+const sendEmail = require('../utils/email');
 
 const generateToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -16,6 +18,9 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChanged: req.body.passwordChanged,
+    role: req.body.role,
+    passwordResetToken: req.body.passwordResetToken,
+    passwordResetExpires: req.body.passwordResetExpires,
   });
 
   // const token = jwt.sign({ id: userData._id }, process.env.JWT_SECRET, {
@@ -100,3 +105,67 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = freshUser;
   next();
 });
+
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    //roles = ['admin','lead-guid']  role= 'user' not include
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppGlobalErrorClass(
+          403,
+          'You do not have purmissions to perform this action',
+        ),
+      );
+    }
+    next();
+  };
+
+exports.forgotpassword = catchAsync(async (req, res, next) => {
+  // 1) GET USER BASED ON POSTED EMAIL
+
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    //if there is no user with that email
+    return next(
+      new AppGlobalErrorClass(404, "ther's no user with that email "),
+    );
+  }
+
+  // 2) GENERATE THE RANDOM RESET TOKEN
+  const resetToken = user.createForgotPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+  // await user.save();
+  // user.save({validateBeforeSave:false}) u can also set this if validation is applying before saving
+  //  3) SEND IT TO USER'S EMAIL
+  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetpassword/${resetToken}`;
+
+  const message = `forgot your password ? please patch a request with new password to : ${resetURL} \n . if not . ignore this message`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'your password reset token is valid for 10 minutes !!',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'token sent to the email ',
+    });
+  } catch (err) {
+    // console.log(err);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppGlobalErrorClass(
+        500,
+        'There was an error sending the email, Try again later!',
+      ),
+    );
+  }
+});
+
+exports.resetpassword = (req, res, next) => {};
