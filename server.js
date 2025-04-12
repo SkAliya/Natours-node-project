@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 // UNCATCHEXCEPTIONS
 process.on('uncaughtException', (err) => {
-  console.log(err.message, err.name);
+  console.log(err.message, err.name, err);
   console.log('UNHANDLED REJECTIONS 💥 : Shutting down the app.....');
 
   process.exit(1); //0-> for success 1->for error
@@ -42,7 +42,7 @@ const server = app.listen(port, () => {
 
 // whenever like databse connectoion failed with mongoose mongodb like worng passwrd any errors async comes then this err wont handle by our globalerrcontrol so we have to handlw those outside of express err handler so create this eventhandler we already know how works check the events lectors nd close the server if unhandlrejecs occurs then exit the app
 process.on('unhandledRejection', (err) => {
-  console.log(err.message, err.name);
+  console.log(err.message, err.name, err);
   console.log('UNHANDLED REJECTIONS 💥 : Shutting down the app.....');
   server.close(
     () => process.exit(1), //0-> for success 1->for error

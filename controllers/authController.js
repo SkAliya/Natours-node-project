@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const AppGlobalErrorClass = require('../utils/appGlobalError');
@@ -5,11 +7,22 @@ const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 
 const sendEmail = require('../utils/email');
+// const user = require('./../routes/usersRoutes');
 
 const generateToken = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRESIN,
   });
+
+const tokenRes = (user, statuscode, res) => {
+  res.status(statuscode).json({
+    status: 'success',
+    token: generateToken(user._id),
+    data: {
+      user,
+    },
+  });
+};
 
 exports.signup = catchAsync(async (req, res, next) => {
   const userData = await User.create({
@@ -27,15 +40,16 @@ exports.signup = catchAsync(async (req, res, next) => {
   //   expiresIn: process.env.JWT_EXPIRESIN,
   // });  use the above func fo rtoken
 
-  const token = generateToken(userData._id);
+  // const token = generateToken(userData._id);
 
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: userData,
-    },
-  });
+  // res.status(201).json({
+  //   status: 'success',
+  //   token,
+  //   data: {
+  //     user: userData,
+  //   },
+  // });
+  tokenRes(userData, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -52,10 +66,11 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppGlobalErrorClass(401, 'Incorrect email or password'));
   }
   // 3) if all crrt then send res
-  res.status(200).json({
-    status: 'success',
-    token: generateToken(user._id),
-  });
+  // res.status(200).json({
+  //   status: 'success',
+  //   token: generateToken(user._id),
+  // });
+  tokenRes(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -90,7 +105,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     return next(
       new AppGlobalErrorClass(
         401,
-        'The user belonging to this token does no longer exits!',
+        'The user belonging to this token does no longer exits! Please signup again',
       ),
     );
 
@@ -128,7 +143,7 @@ exports.forgotpassword = catchAsync(async (req, res, next) => {
   if (!user) {
     //if there is no user with that email
     return next(
-      new AppGlobalErrorClass(404, "ther's no user with that email "),
+      new AppGlobalErrorClass(404, "there's no user with that email "),
     );
   }
 
@@ -154,7 +169,7 @@ exports.forgotpassword = catchAsync(async (req, res, next) => {
       message: 'token sent to the email ',
     });
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
@@ -168,4 +183,61 @@ exports.forgotpassword = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.resetpassword = (req, res, next) => {};
+exports.resetpassword = catchAsync(async (req, res, next) => {
+  // 1 GET USER BASED ON TOKEN
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  // 2 IF TOKEN NOT EXPIRED & THERE IS USER EXITS,SET THE NEW PASSWORD
+
+  if (!user) {
+    return next(
+      new AppGlobalErrorClass(400, 'Token is invalid or has expired'),
+    );
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  //  3 UPDATED THE PASSWORDCHANGED FIELD FOR CURT USER USING THE MIDDWALRE
+  //  4 log the user in & send jwt
+  // const token = generateToken(user._id);
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
+
+  tokenRes(user, 200, res);
+});
+
+exports.updatepassword = catchAsync(async (req, res, next) => {
+  // 1 GET USER FROM COLLECTION
+  const user = await User.findById(req.user.id).select('+password');
+
+  if (!user) {
+    return next(
+      new AppGlobalErrorClass(400, 'Please login to do this operation'),
+    );
+  }
+
+  // 2 CHECK IF POSTED PASSWORD IS CORRECT
+  if (!(await user.correctPassword(req.body.oldpassword, user.password))) {
+    return next(
+      new AppGlobalErrorClass(401, 'Your current Password is not matched'),
+    );
+  }
+  // 3 IF SO, UPDATE PASSWORD
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordconfirm;
+  await user.save();
+
+  // 4 LOG THE USER IN SEND JWT
+  tokenRes(user, 200, res);
+});
