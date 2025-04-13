@@ -2,11 +2,9 @@ const fs = require('fs');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const helemt = require('helmet');
 
 const AppGlobalErrorClass = require('./utils/appGlobalError');
 const errorController = require('./controllers/errorController');
-const { default: helmet } = require('helmet');
 
 const toursRouter = require(`${__dirname}/routes/toursRoutes`);
 const usersRouter = require(`${__dirname}/routes/usersRoutes`);
@@ -15,31 +13,15 @@ const app = express();
 
 // GLOBAL MIDDLEWARES
 
-// 1 SET SECUIRTY HTTP HEADERS
-app.use(helmet());
-
-// 2 DEVELOPEMNT LOGGING
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// BODY PARSER, READING DATA FROM BODY INTO REQ.BODY
-// app.use(express.json());
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json());
 
 // STATIC FILES LOADING liek html overview html images css js files like . USING STATIC middle
 app.use(express.static(`${__dirname}/public`));
 
-// LIMIT REQ FROM SAME API
-const limitOptions = rateLimit({
-  max: 3,
-  windowMs: 60 * 60 * 1000,
-  message: 'Too many requests from this IP,Please try again after 1 hour',
-});
-
-app.use('/api', limitOptions);
-
-// FOR CHECKING PURPOSE USE THESE MIDDLWARES
 app.use((req, res, next) => {
   console.log('hii im from middleware');
   next();
@@ -53,6 +35,13 @@ app.use((req, res, next) => {
   next();
 });
 
+const limitOptions = rateLimit({
+  max: 3,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP,Please try again after 1 hour',
+});
+
+app.use('/api', limitOptions);
 // ROUTES FUNCTIONS
 /////////////////////////////////////////////////////////
 
