@@ -2,11 +2,13 @@ const fs = require('fs');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const helemt = require('helmet');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppGlobalErrorClass = require('./utils/appGlobalError');
 const errorController = require('./controllers/errorController');
-const { default: helmet } = require('helmet');
 
 const toursRouter = require(`${__dirname}/routes/toursRoutes`);
 const usersRouter = require(`${__dirname}/routes/usersRoutes`);
@@ -27,12 +29,32 @@ if (process.env.NODE_ENV === 'development') {
 // app.use(express.json());
 app.use(express.json({ limit: '10kb' }));
 
+// Data sanitization againt NoSQL query injections
+app.use(mongoSanitize());
+
+// Data sanitization againt XSS
+app.use(xss());
+
+//Preventing parameter pollution
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'price',
+      'difficulty',
+      'maxGroupSize',
+    ],
+  }),
+);
+
 // STATIC FILES LOADING liek html overview html images css js files like . USING STATIC middle
 app.use(express.static(`${__dirname}/public`));
 
 // LIMIT REQ FROM SAME API
 const limitOptions = rateLimit({
-  max: 3,
+  max: 100,
   windowMs: 60 * 60 * 1000,
   message: 'Too many requests from this IP,Please try again after 1 hour',
 });

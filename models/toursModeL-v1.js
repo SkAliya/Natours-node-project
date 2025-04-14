@@ -2,8 +2,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
-const User = require('./userModel');
-
 // /////////////////////////////////doc new tour creating using mongoose model & schema
 const tourSchema = new mongoose.Schema(
   {
@@ -40,8 +38,8 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a difficulty'],
       enum: {
-        values: ['easy', 'medium', 'difficult'],
-        message: 'Difficulty is either: easy, medium or difficult',
+        values: ['easy', 'medium', 'difficulty'],
+        message: 'Difficulty is either: easy, medium or difficulty',
       },
     },
 
@@ -94,38 +92,6 @@ const tourSchema = new mongoose.Schema(
       },
     },
     startDates: [Date],
-    startLocation: {
-      type: {
-        type: String,
-        default: 'Point',
-        enum: ['Point'],
-      },
-      coordinates: [Number],
-      description: String,
-      address: String,
-    },
-    locations: [
-      {
-        type: {
-          type: String,
-          default: 'Point',
-          enum: ['Point'],
-        },
-        coordinates: [Number],
-        description: String,
-        address: String,
-        day: Number,
-      },
-    ],
-    // guides: Array, //EMBEDDING WAY BY SUPPLYING IDS WHEN TOUR CREATING
-
-    // for child referencing using not embedding directl users data instead clhild referncing tour is parent user is child nd his ids as used for refercing
-    guides: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-      },
-    ],
   },
   {
     toJSON: { virtuals: true },
@@ -157,12 +123,6 @@ tourSchema.virtual('durationWeeks').get(function () {
 //   next();
 // });
 
-tourSchema.pre('save', async function (next) {
-  const promiseArray = this.guides.map(async (id) => await User.findById(id));
-  this.guides = await Promise.all(promiseArray);
-  next();
-});
-
 // QUERY MIDDLEWARE
 
 tourSchema.pre(/^find/, function (next) {
@@ -178,14 +138,6 @@ tourSchema.post(/^find/, function (docs, next) {
   next();
 });
 
-tourSchema.pre(/^find/, function (next) {
-  // this.populate('guides');
-  this.populate({
-    path: 'guides',
-    select: '-__v -passwordChanged',
-  });
-  next();
-});
 //  AGGREGATE MIDDLEWARE
 
 tourSchema.pre('aggregate', function (next) {

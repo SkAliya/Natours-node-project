@@ -22,10 +22,10 @@ mongoose
     // console.log(con.connection);
     console.log('CONNECTION SUCCESSFULL WITH DB');
   });
-
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),
-);
+// const tours = JSON.parse( fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'),);
+// actuall data imprting first delete unnessary daata form compass db then import using this cmd " node file path plus --delete/--import
+// node ./dev-data\data\import-dev-data.js
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 // importig data into db
 const importData = async () => {
