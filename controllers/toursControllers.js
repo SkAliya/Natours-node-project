@@ -37,7 +37,7 @@ exports.getReq = catchAsync(async (req, res, next) => {
 });
 
 exports.getSingleReq = catchAsync(async (req, res, next) => {
-  // const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate('reviews');
   // const tour = await Tour.findById(req.params.id).populate('guides');
 
   if (!tour) {

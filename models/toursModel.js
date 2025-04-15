@@ -126,6 +126,13 @@ const tourSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    // dont need this becuse we r using virtual populate way u can also do this way but reviews array may increase we dont want that
+    // reviews: [
+    //   {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: 'Review',
+    //   },
+    // ],
   },
   {
     toJSON: { virtuals: true },
@@ -138,6 +145,11 @@ tourSchema.virtual('durationWeeks').get(function () {
   return Math.floor(this.duration / 7);
 });
 
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
 //DOCUMENT MIDDLEWARES OF IN MONGOOSE
 // DOCUMENT MIDDLWARE:runs before .save & .create not for update ok
 // tourSchema.pre('save', function (next) {
@@ -157,11 +169,11 @@ tourSchema.virtual('durationWeeks').get(function () {
 //   next();
 // });
 
-tourSchema.pre('save', async function (next) {
-  const promiseArray = this.guides.map(async (id) => await User.findById(id));
-  this.guides = await Promise.all(promiseArray);
-  next();
-});
+// tourSchema.pre('save', async function (next) {
+//   const promiseArray = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(promiseArray);
+//   next();
+// });
 
 // QUERY MIDDLEWARE
 
@@ -184,8 +196,11 @@ tourSchema.pre(/^find/, function (next) {
     path: 'guides',
     select: '-__v -passwordChanged',
   });
+  //this.populate({ path: 'reviews' }); // no need of this, if ur using populate nrml way then use this if u using virtual way then use the above virtual way see virtual middlwre creates for populating reviews of tour virtually
   next();
 });
+
+// instead of using populate method u can virtually populate reviews data into tour each by specifying
 //  AGGREGATE MIDDLEWARE
 
 tourSchema.pre('aggregate', function (next) {

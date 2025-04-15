@@ -1,6 +1,7 @@
 const express = require('express');
 const toursControllers = require('./../controllers/toursControllers');
 const authController = require('./../controllers/authController');
+const reviewsController = require('./../controllers/reviewsController');
 
 const tour = express.Router();
 
@@ -36,6 +37,19 @@ tour
     authController.protect,
     authController.restrictTo('admin', 'lead-guide'),
     toursControllers.deleteReq,
+  );
+
+// NESTED TOUR REVIEWS ROUTE
+// POST api/v1/ tour /: tourId / reviews    ex:/tours/23457/reviews
+// GET  api / v1 / tour /: tourid / reviews /  ex:/tours/2467/reviews
+// GET api / v1 / tour /: tourId / reviews /:reviewId  ex:/tours/89242/reviews/92523
+
+tour
+  .route('/:tourid/reviews')
+  .post(
+    authController.protect,
+    authController.restrictTo('user'),
+    reviewsController.createReview,
   );
 
 module.exports = tour;

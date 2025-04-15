@@ -12,6 +12,7 @@ const errorController = require('./controllers/errorController');
 
 const toursRouter = require(`${__dirname}/routes/toursRoutes`);
 const usersRouter = require(`${__dirname}/routes/usersRoutes`);
+const reviewsRouter = require(`${__dirname}/routes/reviewsRoutes`);
 
 const app = express();
 
@@ -86,6 +87,9 @@ app.use('/api/v1/tours', toursRouter);
 
 // USERS ROUTING
 app.use('/api/v1/users', usersRouter);
+
+// REVIEWS ROUTING
+app.use('/api/v1/reviews', reviewsRouter);
 
 // MIDDLEWARE FOR UNHANDLED ROUTES
 
