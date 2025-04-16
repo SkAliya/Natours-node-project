@@ -26,14 +26,8 @@ review
 
 review
   .route('/:id')
-  .get(reviewsController.getReview)
-  .delete(
-    authController.restrictTo('user', 'admin'),
-    reviewsController.deleteReview,
-  )
-  .patch(
-    authController.restrictTo('user', 'admin'),
-    reviewsController.updateReview,
-  );
+  .delete(reviewsController.deleteReview)
+  .patch(reviewsController.updateReview)
+  .get(reviewsController.getReview);
 
 module.exports = review;

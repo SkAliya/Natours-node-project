@@ -1,6 +1,6 @@
 const AppGlobalErrorClass = require('../utils/appGlobalError');
 const Tour = require('./../models/toursModel');
-// const APIFeatures = require('./../utils/apiFeatures');
+const APIFeatures = require('./../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
 const handlerFactory = require('./handlerFactory');
 
@@ -15,58 +15,58 @@ exports.getCheapToursMiddleware = (req, res, next) => {
 
 // TOURS HANDLERS
 
-// exports.getReq = catchAsync(async (req, res, next) => {
-//   // BUILDING QUERY
-//   const features = new APIFeatures(Tour.find(), req.query)
-//     .filter()
-//     .sort()
-//     .fields()
-//     .pagination();
+exports.getReq = catchAsync(async (req, res, next) => {
+  // BUILDING QUERY
+  const features = new APIFeatures(Tour.find(), req.query)
+    .filter()
+    .sort()
+    .fields()
+    .pagination();
 
-//   // EXECUTING QUERY
-//   const tours = await features.query;
+  // EXECUTING QUERY
+  const tours = await features.query;
 
-//   // SEND RESPONSE
-//   res.status(200).send({
-//     status: 'success',
-//     requestedAt: req.requestTime,
-//     results: tours.length,
-//     data: {
-//       tours,
-//     },
-//   });
-// });
+  // SEND RESPONSE
+  res.status(200).send({
+    status: 'success',
+    requestedAt: req.requestTime,
+    results: tours.length,
+    data: {
+      tours,
+    },
+  });
+});
 
-// exports.getSingleReq = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findById(req.params.id).populate('reviews');
-//   // const tour = await Tour.findById(req.params.id).populate('guides');
+exports.getSingleReq = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id).populate('reviews');
+  // const tour = await Tour.findById(req.params.id).populate('guides');
 
-//   if (!tour) {
-//     return next(new AppGlobalErrorClass(404, 'No tour found with that ID'));
-//   }
+  if (!tour) {
+    return next(new AppGlobalErrorClass(404, 'No tour found with that ID'));
+  }
 
-//   res.status(200).send({
-//     status: 'success',
-//     data: {
-//       tour,
-//     },
-//   });
-// });
+  res.status(200).send({
+    status: 'success',
+    data: {
+      tour,
+    },
+  });
+});
 
-// exports.postReq = catchAsync(async (req, res, next) => {
-//   const newTour = await Tour.create(req.body);
+exports.postReq = catchAsync(async (req, res, next) => {
+  const newTour = await Tour.create(req.body);
 
-//   if (!newTour) {
-//     return next(new AppGlobalErrorClass(404, 'No tour found with that ID'));
-//   }
+  if (!newTour) {
+    return next(new AppGlobalErrorClass(404, 'No tour found with that ID'));
+  }
 
-//   res.status(201).json({
-//     status: 'success',
-//     data: {
-//       tours: newTour,
-//     },
-//   });
-// });
+  res.status(201).json({
+    status: 'success',
+    data: {
+      tours: newTour,
+    },
+  });
+});
 
 // exports.patchReq = catchAsync(async (req, res, next) => {
 //   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
@@ -99,9 +99,6 @@ exports.getCheapToursMiddleware = (req, res, next) => {
 
 exports.deleteReq = handlerFactory.deleteDoc(Tour);
 exports.patchReq = handlerFactory.updateDoc(Tour);
-exports.postReq = handlerFactory.createDoc(Tour);
-exports.getReq = handlerFactory.getAllDoc(Tour);
-exports.getSingleReq = handlerFactory.getDoc(Tour, { path: 'reviews' });
 
 exports.toursStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([

@@ -56,32 +56,32 @@ const userSchema = new mongoose.Schema({
 });
 
 // MIDDLEWARE FOR PASSWRD ENCRYPTING
-userSchema.pre('save', async function (next) {
-  // ONLY RUN THIS FUNC IF PASSD WAS ACTULLY UPDATED OR CREATED NEW
-  if (!this.isModified('password')) return next();
+// userSchema.pre('save', async function (next) {
+//   // ONLY RUN THIS FUNC IF PASSD WAS ACTULLY UPDATED OR CREATED NEW
+//   if (!this.isModified('password')) return next();
 
-  //HASH THE PASSWRD WITH COST OF 12
-  this.password = await bcrypt.hash(this.password, 12);
+//   //HASH THE PASSWRD WITH COST OF 12
+//   this.password = await bcrypt.hash(this.password, 12);
 
-  //DELETE PASSWRDCONFIRM FIELD
-  this.passwordConfirm = undefined;
+//   //DELETE PASSWRDCONFIRM FIELD
+//   this.passwordConfirm = undefined;
 
-  next();
-});
+//   next();
+// });
 
-userSchema.pre('save', function (next) {
-  if (!this.isModified('password') || this.isNew) return next();
+// userSchema.pre('save', function (next) {
+//   if (!this.isModified('password') || this.isNew) return next();
 
-  this.passwordChanged = Date.now() - 1000;
-  // this.passwordChanged = Date.now(); this is for exmpl if u chengd passwrd nd get tours immdlry u get err u changed passwd login again for fr that 1 sec time prd u loss login so we do tric is passwdchned set to less than token iat tym so we can even chnged passwd still logged in ok
-  next();
-});
+//   this.passwordChanged = Date.now() - 1000;
+//   // this.passwordChanged = Date.now(); this is for exmpl if u chengd passwrd nd get tours immdlry u get err u changed passwd login again for fr that 1 sec time prd u loss login so we do tric is passwdchned set to less than token iat tym so we can even chnged passwd still logged in ok
+//   next();
+// });
 
-userSchema.pre(/^find/, function (next) {
-  this.find({ active: { $ne: false } });
-  next();
-});
-// _______________________________________________________________________
+// userSchema.pre(/^find/, function (next) {
+//   this.find({ active: { $ne: false } });
+//   next();
+// });
+// // _______________________________________________________________________
 
 userSchema.methods.correctPassword = async function (
   candidatePassword,

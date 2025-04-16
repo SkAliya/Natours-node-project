@@ -9,22 +9,34 @@ const user = express.Router();
 // LOGIN
 user.route('/signup').post(authController.signup);
 user.route('/login').post(authController.login);
+
 // RESETS & FORGOT
 user.route('/forgotpassword').post(authController.forgotpassword);
 user.route('/resetpassword/:token').patch(authController.resetpassword);
-
-user.use(authController.protect);
+// user.post('/forgotpassword', authController.forgotpassword);
+// user.patch('/resetpassword/:token', authController.resetpassword);
 
 // UPDATES
-user.route('/updatepassword').patch(authController.updatepassword);
-user.route('/updatedata').patch(usersControllers.updatedata);
+user
+  .route('/updatepassword')
+  .patch(authController.protect, authController.updatepassword);
+
+user
+  .route('/updatedata')
+  .patch(authController.protect, usersControllers.updatedata);
 
 // DELETES
-user.route('/deleteuser').delete(usersControllers.deletecurrentuser);
-// GET CURRT USER USING SIMPLE ROUTE NAME
-user.route('/me').get(usersControllers.getMe, usersControllers.getSingleUser);
+user
+  .route('/deleteuser')
+  .delete(authController.protect, usersControllers.deletecurrentuser);
 
-user.use(authController.restrictTo('admin'));
+user
+  .route('/me')
+  .get(
+    authController.protect,
+    usersControllers.getMe,
+    usersControllers.getSingleUser,
+  );
 
 user
   .route('/')
