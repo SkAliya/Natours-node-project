@@ -23,15 +23,6 @@ tour
   );
 
 tour
-  .route('/tours-within/:distance/center/:latlng/unit/:unit')
-  .get(toursControllers.getToursWithin);
-// api/v1/tours/tours-within?distance=200&center=1.11234,0.896242&unit=mi  (mi/km) upontil this point we built like thia url rember
-// new way nd most coomn widly used way is like below
-// api/v1/tours/tours-within/distance/200/center/1.00223,0.5552/unnit/mi
-
-tour.route('/distances/:latlng/unit/:unit').get(toursControllers.getDistances);
-
-tour
   .route('/')
   .get(toursControllers.getReq)
   .post(

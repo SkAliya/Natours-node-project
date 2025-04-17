@@ -33,6 +33,7 @@ class APIFeatures {
     if (this.queryString.fields) {
       let fields = this.queryString.fields.split(',').join(' ');
       this.query = this.query.select(fields);
+      console.log(fields);
     } else {
       // this.query = this.query.select('-__v').select('-name');
       this.query = this.query.select('-__v');

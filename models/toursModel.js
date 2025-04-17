@@ -50,6 +50,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, 'A tour ratings must be above 1.0'],
       max: [5, 'A tour ratings must be below 5.0'],
+      set: (val) => Math.round(val * 10) / 10, //4.6667 -> 4.7 /4.6667 ->46.667->47 ->4.7
     },
     ratingsQuantity: {
       type: Number,
@@ -140,6 +141,10 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
 // virtual properties:
 tourSchema.virtual('durationWeeks').get(function () {
   return Math.floor(this.duration / 7);
@@ -203,11 +208,11 @@ tourSchema.pre(/^find/, function (next) {
 // instead of using populate method u can virtually populate reviews data into tour each by specifying
 //  AGGREGATE MIDDLEWARE
 
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  // console.log(this.pipeline());
-  next();
-});
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   // console.log(this.pipeline());
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 
