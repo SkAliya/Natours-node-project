@@ -6,8 +6,6 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const pug = require('pug');
-const path = require('path');
 
 const AppGlobalErrorClass = require('./utils/appGlobalError');
 const errorController = require('./controllers/errorController');
@@ -17,12 +15,6 @@ const usersRouter = require(`${__dirname}/routes/usersRoutes`);
 const reviewsRouter = require(`${__dirname}/routes/reviewsRoutes`);
 
 const app = express();
-
-/////////////////////////////
-// PUG ADDING
-app.set('view engine', 'pug');
-// app.set('views', `${__dirname}/views/base`); // old way replace all in this
-app.set('views', path.join(__dirname, 'views'));
 
 // GLOBAL MIDDLEWARES
 
@@ -59,8 +51,7 @@ app.use(
 );
 
 // STATIC FILES LOADING liek html overview html images css js files like . USING STATIC middle
-// app.use(express.static(`${__dirname}/public`)); //replacing with path
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(`${__dirname}/public`));
 
 // LIMIT REQ FROM SAME API
 const limitOptions = rateLimit({
@@ -83,17 +74,6 @@ app.use((req, res, next) => {
   // console.log(x);
   // console.log(req.headers);
   next();
-});
-
-// pug checking base file rendering or not
-// app.get('/', (req, res) => {
-//   res.status(200).render('base');
-// });
-app.get('/', (req, res) => {
-  res.status(200).render('base', {
-    tourName: 'Zingle Bell',
-    user: 'Aliya',
-  });
 });
 
 // ROUTES FUNCTIONS
